@@ -1,0 +1,13 @@
+[package]
+name = "teko-rs"
+description = "Command line interface for Teko"
+repository = "https://github.com/BourgondAries/teko-rs"
+version = "0.1.0"
+authors = ["Kevin Robert Stravers <macocio@gmail.com>"]
+keywords = ["teko", "programming", "language"]
+
+[dependencies]
+clap = "2.25.0"
+ctrlc = "3.0.2"
+rustyline = "1.0.0"
+teko = "0.1.3"
