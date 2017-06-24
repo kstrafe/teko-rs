@@ -140,7 +140,7 @@ fn from_terminal() {
 		}
 		inputline += 1;
 	}
-	if let None = rl.save_history(HISTORY) {
-		println!["Unable to save history"];
+	if let Err(err) = rl.save_history(HISTORY) {
+		println!["Unable to save history: {:#?}", err];
 	}
 }

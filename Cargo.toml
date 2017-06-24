@@ -2,7 +2,7 @@
 name = "teko-rs"
 description = "Command line interface for Teko"
 repository = "https://github.com/BourgondAries/teko-rs"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Kevin Robert Stravers <macocio@gmail.com>"]
 keywords = ["teko", "programming", "language"]
 
