@@ -1,4 +1,5 @@
 /*
 !.gitignore
+!Cargo.toml
 !rustfmt.toml
 !src/
