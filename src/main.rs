@@ -1,3 +1,6 @@
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+
 extern crate clap;
 extern crate ctrlc;
 extern crate rustyline;
@@ -9,7 +12,7 @@ use rustyline::Editor;
 
 fn main() {
 	let matches = App::new("Teko")
-		.version("0.1.0")
+		.version("0.1.3")
 		.author("Kevin Robert Stravers <macocio@gmail.com>")
 		.about("Interpreter for the Teko programming language")
 		.arg(
@@ -64,15 +67,31 @@ fn main() {
 }
 
 fn from_terminal() {
+	use std::env;
+
 	use teko::data_structures::*;
 	use teko::interpret::*;
 	use teko::parse::*;
 
-	const HISTORY: &str = "~/.config/teko-history";
+	const HISTORY: &'static [&str] = &[".config", "teko-history"];
+	let home = if let Some(mut path) = env::home_dir() {
+		for elem in HISTORY {
+			path.push(elem);
+		}
+		Some(path)
+	} else {
+		None
+	};
 
 	let mut rl = Editor::<()>::new();
-	if let Err(_) = rl.load_history(HISTORY) {
-		// No previous history
+	if let Some(ref home) = home {
+		if rl.load_history(home).is_err() {
+			println![
+				"Unable to load history from {:?} \
+				 if this is your first time running Teko you can ignore this message",
+				home
+			];
+		}
 	}
 
 	let mut env = initialize_environment_with_standard_library();
@@ -140,7 +159,9 @@ fn from_terminal() {
 		}
 		inputline += 1;
 	}
-	if let Err(err) = rl.save_history(HISTORY) {
-		println!["Unable to save history: {:#?}", err];
+	if let Some(ref home) = home {
+		if let Err(err) = rl.save_history(home) {
+			println!["Unable to save history in {:?}: {:#?}", home, err];
+		}
 	}
 }

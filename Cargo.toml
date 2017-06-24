@@ -2,13 +2,17 @@
 name = "teko-rs"
 description = "Command line interface for Teko"
 repository = "https://github.com/BourgondAries/teko-rs"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Kevin Robert Stravers <macocio@gmail.com>"]
 keywords = ["teko", "programming", "language"]
 license = "GPL-3.0"
 
 [dependencies]
 clap = "2.25.0"
+clippy = {version = "0.0.140", optional = true}
 ctrlc = "3.0.2"
 rustyline = "1.0.0"
 teko = "0.1.3"
+
+[features]
+default = []
