@@ -1,0 +1,47 @@
+(def null? (fn (arg) (same? arg ())))
+(def drop (fn (lst n)
+              (if (> n 0)
+                (drop (tail lst) (- n 1))
+                lst)))
+
+(def @take (fn (lst n accum)
+               (if (> n 0)
+                   (@take (tail lst) (- n 1) (pair (head lst) accum))
+                   accum)))
+
+(def take (fn (lst n) (@take lst n ())))
+
+(def @reverse (fn (lst accum)
+                  (if (null? lst)
+                      accum
+                      (@reverse (tail lst) (pair (head lst) accum)))))
+(def reverse (fn (lst) (@reverse lst ())))
+
+(def @@append (fn (lhs rhs)
+                  (if (null? lhs)
+                      rhs
+                      (@@append (tail lhs) (pair (head lhs) rhs)))))
+
+(def @append (fn (lhs rhs)
+                 (@@append (reverse lhs) rhs)))
+
+(def @append' (fn (lsts accum)
+                  (if (null? lsts)
+                    accum
+                    (@append' (tail lsts) (@append accum (eval (head lsts)))))))
+
+(def append (mo lsts (pair quote (@append' lsts ()))))
+
+(def @map (fn (func lst accum)
+          (if (null? lst)
+            (reverse accum)
+            (@map func (tail lst) (pair (func (head lst)) accum)))))
+(def map (fn (func lst) (@map func lst ())))
+
+(def @filter (fn (pred lst accum)
+                 (if (null? lst)
+                     (reverse accum)
+                     (if (pred (head lst))
+                         (@filter pred (tail lst) (pair (head lst) accum))
+                         (@filter pred (tail lst) accum)))))
+(def filter (fn (pred lst) (@filter pred lst ())))

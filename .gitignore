@@ -1,6 +1,7 @@
 /*
 !.gitignore
 !Cargo.toml
+!library.tko
 !README.md
 !rustfmt.toml
 !src/
