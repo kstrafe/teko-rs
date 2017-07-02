@@ -1,4 +1,5 @@
 (def null? (fn (arg) (same? arg ())))
+
 (def drop (fn (lst n)
               (if (> n 0)
                 (drop (tail lst) (- n 1))
@@ -8,6 +9,7 @@
                (if (> n 0)
                    (@take (tail lst) (- n 1) (pair (head lst) accum))
                    accum)))
+
 
 (def take (fn (lst n) (@take lst n ())))
 
@@ -45,3 +47,12 @@
                          (@filter pred (tail lst) (pair (head lst) accum))
                          (@filter pred (tail lst) accum)))))
 (def filter (fn (pred lst) (@filter pred lst ())))
+
+(def @flatten (fn (lst accum)
+                  (if (null? lst)
+                      accum
+                      (if (not (pair? (head lst)))
+                          (@flatten (tail lst) (pair (head lst) accum))
+                          (@flatten (tail lst) (@flatten (head lst) accum))))))
+
+(def flatten (fn (lst) (reverse (@flatten lst ()))))
