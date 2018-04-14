@@ -12,40 +12,33 @@ use rustyline::Editor;
 
 fn main() {
 	let matches = App::new("Teko")
-		.version("0.1.3")
-		.author("Kevin Robert Stravers <macocio@gmail.com>")
+		.version("0.3.0-alpha")
+		.author("Kevin Robert Stravers <kefin@stravers.net>")
 		.about("Interpreter for the Teko programming language")
-		.arg(
-			Arg::with_name("INPUT")
-				.help("File or expression to run")
-				.index(1),
-		)
-		.arg(
-			Arg::with_name("expression")
-				.short("e")
-				.multiple(false)
-				.takes_value(true)
-				.help("Evaluate an expression"),
-		)
 		.arg(
 			Arg::with_name("v")
 				.short("v")
 				.multiple(true)
 				.help("Sets the level of verbosity"),
 		)
-		.group(
-			ArgGroup::with_name("either_e_or_file")
-				.args(&["expression", "INPUT"])
-				.conflicts_with("INPUT"),
+		.arg(
+			Arg::with_name("expression")
+				.short("e")
+				.long("expression")
+				.multiple(false)
+				.takes_value(true)
+				.conflicts_with("INPUT")
+				.help("Evaluate an expression"),
+		)
+		.arg(
+			Arg::with_name("INPUT")
+				.help("File or expression to run")
+				.conflicts_with("expression")
+				.index(1),
 		)
 		.get_matches();
 
-	match matches.occurrences_of("v") {
-		0 => {}
-		1 => println!("Verbose level 1"),
-		2 | _ => println!("Verbose level 2"),
-	}
-
+	let verbosity = matches.occurrences_of("v");
 	if let Some(input) = matches.value_of("INPUT") {
 		let tree = teko::parse::parse_file(input);
 		if let Ok(tree) = tree {
@@ -100,9 +93,10 @@ fn from_terminal() {
 	parser.current_read_position.line = inputline;
 
 	loop {
-		let readline = rl.readline(if is_empty(&parser) { ">> " } else { "   " });
+		let readline = rl.readline(if is_empty(&parser) { "> " } else { "   " });
 		match readline {
 			Ok(line) => {
+				inputline += 1;
 				rl.add_history_entry(&line);
 				for ch in line.chars() {
 					if let Err(state) = parse_character(ch, &mut parser) {
@@ -147,6 +141,10 @@ fn from_terminal() {
 			}
 			Err(ReadlineError::Interrupted) => {
 				println!("^C");
+				parser.stack = vec![vec![]];
+				parser.token = String::new();
+				parser.error = None;
+				parser.unmatched_opening_parentheses = vec![];
 			}
 			Err(ReadlineError::Eof) => {
 				println!("^D");
@@ -157,7 +155,6 @@ fn from_terminal() {
 				break;
 			}
 		}
-		inputline += 1;
 	}
 	if let Some(ref home) = home {
 		if let Err(err) = rl.save_history(home) {

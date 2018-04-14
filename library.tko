@@ -7,7 +7,7 @@
 
 (def @take (fn (lst n accum)
                (if (> n 0)
-                   (@take (tail lst) (- n 1) (pair (head lst) accum))
+                   (@take (tail lst) (- n 1) (cell (head lst) accum))
                    accum)))
 
 
@@ -16,13 +16,13 @@
 (def @reverse (fn (lst accum)
                   (if (null? lst)
                       accum
-                      (@reverse (tail lst) (pair (head lst) accum)))))
+                      (@reverse (tail lst) (cell (head lst) accum)))))
 (def reverse (fn (lst) (@reverse lst ())))
 
 (def @@append (fn (lhs rhs)
                   (if (null? lhs)
                       rhs
-                      (@@append (tail lhs) (pair (head lhs) rhs)))))
+                      (@@append (tail lhs) (cell (head lhs) rhs)))))
 
 (def @append (fn (lhs rhs)
                  (@@append (reverse lhs) rhs)))
@@ -32,27 +32,84 @@
                     accum
                     (@append' (tail lsts) (@append accum (eval (head lsts)))))))
 
-(def append (mo lsts (pair quote (@append' lsts ()))))
+(def append (mo lsts (cell quote (@append' lsts ()))))
 
 (def @map (fn (func lst accum)
           (if (null? lst)
             (reverse accum)
-            (@map func (tail lst) (pair (func (head lst)) accum)))))
+            (@map func (tail lst) (cell (func (head lst)) accum)))))
 (def map (fn (func lst) (@map func lst ())))
 
 (def @filter (fn (pred lst accum)
                  (if (null? lst)
                      (reverse accum)
                      (if (pred (head lst))
-                         (@filter pred (tail lst) (pair (head lst) accum))
+                         (@filter pred (tail lst) (cell (head lst) accum))
                          (@filter pred (tail lst) accum)))))
 (def filter (fn (pred lst) (@filter pred lst ())))
 
 (def @flatten (fn (lst accum)
                   (if (null? lst)
                       accum
-                      (if (not (pair? (head lst)))
-                          (@flatten (tail lst) (pair (head lst) accum))
+                      (if (not (cell? (head lst)))
+                          (@flatten (tail lst) (cell (head lst) accum))
                           (@flatten (tail lst) (@flatten (head lst) accum))))))
 
 (def flatten (fn (lst) (reverse (@flatten lst ()))))
+
+(def @reduce (fn (lst f accum)
+                 (quote
+                   (write (quote @accum) accum)
+                   (write (quote @lst) lst))
+                 (if (null? lst)
+                     accum
+                     (@reduce (tail lst) f (f (head lst) accum)))))
+
+(def reduce (fn (lst f) 
+                (quote (write lst))
+                (if (null? lst) ()
+                    (@reduce (tail lst) f (head lst)))))
+
+(reduce (list 1 2 3) (fn (x accum) 
+                         (quote
+                          (if (symbol? accum)
+                              (write (quote accum is a symbol))
+                              ())
+                          (write (quote x) x (quote accum) accum))
+                         (* x accum)))
+
+(def @range (fn (m n accum)
+                (if (< m n)
+                    (@range (+ m 1) n (cell m accum))
+                    (if (> m n)
+                        (@range (- m 1) n (cell m accum))
+                        accum))))
+
+(def range (fn (m n) (reverse (@range m n ()))))
+
+(def list-& (fn (lst n) (if (= n 0) (head lst) (list-& (tail lst) (- n 1)))))
+(def list-tail (fn (lst n) (if (= n 0) lst (list-tail (tail lst) (- n 1)))))
+
+(list-tail (range 10 20) 5)
+(list-tail (list 1 2 3 4) 2)
+
+(quote (map (fn (x) (+ x 2)) (eval (cell (head (quote list)) (read)))))
+
+(def != (fn (x y) (not (= x y))))
+
+(def symbol (mo x 
+                (if (not (= (len x) 1))
+                  (error "Can not make a symbol of multiple values")
+                  (list head (cell quote x)))))
+
+(symbol? (symbol 1))
+
+(symbol? (symbol (nice meme)))
+
+(write (symbol 100))
+
+(eval (symbol (symbol 3)))
+
+(symbol (symbol 3))
+
+((symbol +) 3)
